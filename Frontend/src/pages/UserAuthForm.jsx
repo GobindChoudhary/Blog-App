@@ -1,5 +1,5 @@
-import { useContext, useRef } from "react";
-import { Link, Navigate, ServerRouter } from "react-router-dom";
+import { useContext } from "react";
+import { Link, Navigate } from "react-router-dom";
 import InputBox from "../components/InputBox";
 import googleIcon from "../img/google.png";
 import AnimationWrapper from "../common/AnimationWrapper";
@@ -7,6 +7,7 @@ import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import { storeInSession } from "../common/Session";
 import { userContext } from "../App";
+import { authWithGoogle } from "../common/firebase";
 
 const UserAuthForm = ({ type }) => {
   let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
@@ -17,13 +18,12 @@ const UserAuthForm = ({ type }) => {
     setUserAuth,
   } = useContext(userContext);
 
-  console.log(accessToken);
   const userAuthThroughServer = (ServerRoute, formData) => {
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "auth" + ServerRoute, formData)
       .then(({ data }) => {
         storeInSession("user", JSON.stringify(data));
-        setUserAuth(data)
+        setUserAuth(data);
       })
       .catch(({ response }) => {
         toast.error(response.data.error);
@@ -62,6 +62,23 @@ const UserAuthForm = ({ type }) => {
 
     userAuthThroughServer(ServerRoute, formData);
   }
+
+  const hangleGoogleAuth = (e) => {
+    e.preventDefault();
+
+    authWithGoogle()
+      .then((user) => {
+        let ServerRoute = "/google-auth";
+        let formData = {
+          accessToken: user.accessToken,
+        };
+        userAuthThroughServer(ServerRoute, formData);
+      })
+      .catch((err) => {
+        toast.error("troble login through google");
+        return console.log(err);
+      });
+  };
 
   return accessToken ? (
     <Navigate to="/" />
@@ -109,7 +126,10 @@ const UserAuthForm = ({ type }) => {
             <hr className="w-1/2 border-black" />
           </div>
 
-          <button className="btn-dark flex items-center justify-center gap-4 w-[90%] center">
+          <button
+            className="btn-dark flex items-center justify-center gap-4 w-[90%] center"
+            onClick={hangleGoogleAuth}
+          >
             <img src={googleIcon} className="w-5" alt="" />
             continue with google
           </button>

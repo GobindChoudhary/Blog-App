@@ -1,9 +1,24 @@
 import { Link, Outlet } from "react-router-dom";
 import logo from "../img/logo.png";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { userContext } from "../App";
+import UserNavigationPanel from "./UserNavigationPanel";
+
 const Navbar = () => {
   const [SearchBarVisibility, setSearchBarVisibility] = useState(false);
+  const [userNavVisibility, setuserNavBarVisibility] = useState();
 
+  const handleUserNavVisibility = () => {
+    setuserNavBarVisibility((currentState) => !currentState);
+  };
+  const handleUserNavBlur = () => {
+    setTimeout(() => setuserNavBarVisibility(false), 100);
+  };
+
+  const {
+    userAuth,
+    userAuth: { accessToken, profile_img },
+  } = useContext(userContext);
   return (
     <>
       <nav className="navbar">
@@ -39,14 +54,40 @@ const Navbar = () => {
             <i className="fi fi-rr-file-edit"></i>
             <p>Write</p>
           </Link>
-          {/* Signin link */}
-          <Link to="/signin" className="btn-dark py-2">
-            Sign In
+          <Link to="/dashboard/notification">
+            <button className="w-12 h-12 rounded-full bg-grey relative  hover:bg-black/10">
+              <i className="fi fi-rr-bell text-2xl block nt-1"></i>
+            </button>
           </Link>
-          {/* SingUp link */}
-          <Link to="/signup" className="btn-light py-2 hidden md:block">
-            Sign Up
-          </Link>
+          {accessToken ? (
+            <>
+              <div className="relative">
+                <button
+                  className="w-12 h-12 mt-1"
+                  onClick={handleUserNavVisibility}
+                  onBlur={handleUserNavBlur}
+                >
+                  <img
+                    src={profile_img}
+                    className="w-full h-full object-cover rounded-full"
+                    alt=""
+                  />
+                </button>
+                {userNavVisibility ? <UserNavigationPanel /> : ""}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Signin link */}
+              <Link to="/signin" className="btn-dark py-2">
+                Sign In
+              </Link>
+              {/* SingUp link */}
+              <Link to="/signup" className="btn-light py-2 hidden md:block">
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </nav>
       <Outlet />

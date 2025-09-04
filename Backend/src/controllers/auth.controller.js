@@ -2,11 +2,32 @@ import userModel from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
+import admin from "firebase-admin";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { getAuth } from "firebase-admin/auth";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const serviceAccountKey = JSON.parse(
+  fs.readFileSync(
+    path.resolve(
+      __dirname,
+      "../../blog-app-afce4-firebase-adminsdk-fbsvc-36b9d5c440.json"
+    )
+  )
+);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountKey),
+});
 
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
-async function generateUserName(email) {
+async function generateUsername(email) {
   let username = email.split("@")[0];
 
   while (true) {
@@ -25,10 +46,12 @@ async function generateUserName(email) {
   return username;
 }
 
-function formateDatatoSend(user, accessToken) {
+function formateDatatoSend(user) {
+  const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
   return {
     accessToken: accessToken,
-    profile_img: user.personal_info.profile_img,
+    profile_img: user.personal_info.profile_img || "🤣",
     username: user.personal_info.username,
     fullname: user.personal_info.fullname,
     email: user.personal_info.email,
@@ -76,7 +99,7 @@ async function registerController(req, res) {
     const hashPassword = await bcrypt.hash(password, saltRounds);
 
     // generating unique username
-    const username = await generateUserName(email);
+    const username = await generateUsername(email);
 
     //  Creating new User in Database
     const newUser = await userModel.create({
@@ -89,7 +112,6 @@ async function registerController(req, res) {
     });
 
     // Genterating accessToken and sending to cookies
-    const accessToken = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
     // res.cookie("token", accessToken, {
     //   httpOnly: true, // Cookie can't be accessed via JavaScript
     //   secure: true, // Only sent over HTTPS
@@ -97,7 +119,7 @@ async function registerController(req, res) {
     //   maxAge: 1000 * 60 * 60 * 24 * 30, // 1 day
     // });
     // Response to user
-    return res.status(201).json(formateDatatoSend(newUser, accessToken));
+    return res.status(201).json(formateDatatoSend(newUser));
   } catch (error) {
     console.log(error);
 
@@ -125,7 +147,12 @@ async function signinController(req, res) {
         error: "Email does't exist",
       });
     }
-
+    if (user.google_auth) {
+      return res.status(409).json({
+        error:
+          "This email is registed through google. Please Sign in through google",
+      });
+    }
     const match = await bcrypt.compare(password, user.personal_info.password);
 
     if (!match) {
@@ -134,17 +161,75 @@ async function signinController(req, res) {
       });
     }
     // Genterating accessToken and sending to cookies
-    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     // res.cookie("token", accessToken, {
     //   httpOnly: true, // Cookie can't be accessed via JavaScript
     //   secure: true, // Only sent over HTTPS
     //   sameSite: "strict", // Prevent CSRF
     //   maxAge: 1000 * 60 * 60 * 24 * 30, // 1 day
     // });
-    return res.status(200).json(formateDatatoSend(user, accessToken));
+    return res.status(200).json(formateDatatoSend(user));
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 }
 
-export default { registerController, signinController };
+async function googleAuthController(req, res) {
+  const { accessToken } = req.body;
+  getAuth()
+    .verifyIdToken(accessToken)
+    .then(async (decodedUser) => {
+      let { email, name, picture } = decodedUser;
+
+      picture = picture.replace("s96-c", "s384-c");
+      let user = await userModel
+        .findOne({ "personal_info.email": email })
+        .select(
+          "personal_info.fullname personal_info.username personal_info.profile_img google_auth"
+        )
+        .then((u) => {
+          return u || null;
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err.message });
+        });
+
+      if (user) {
+        // login
+        if (!user.google_auth) {
+          return res.status(403).json({
+            error:
+              "This email was signed up without google. Please log in with password to access the account",
+          });
+        }
+      } else {
+        // signup
+        let username = await generateUsername(email);
+
+        user = await userModel
+          .create({
+            personal_info: {
+              fullname: name,
+              email,
+              username,
+              profile_img: picture,
+            },
+            google_auth: true,
+          })
+          .then((u) => {
+            return u;
+          })
+          .catch((error) => {
+            return res.status(500).json(error.message);
+          });
+      }
+      return res.status(200).json(formateDatatoSend(user));
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        error:
+          "Failed to authenticate you with google. Try with some other google account",
+      });
+    });
+}
+
+export default { googleAuthController, registerController, signinController };
