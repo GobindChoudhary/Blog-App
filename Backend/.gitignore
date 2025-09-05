@@ -1,2 +1,5 @@
 node_modules
 .env
+*.json
+# Firebase service account key
+blog-app-afce4-firebase-adminsdk-fbsvc-36b9d5c440.json
