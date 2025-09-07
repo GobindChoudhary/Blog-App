@@ -15,7 +15,7 @@ const serviceAccountKey = JSON.parse(
   fs.readFileSync(
     path.resolve(
       __dirname,
-      "../../blog-app-afce4-firebase-adminsdk-fbsvc-36b9d5c440.json"
+      "../../blog-app-afce4-firebase-adminsdk-fbsvc-152a97ecf9.json"
     )
   )
 );
