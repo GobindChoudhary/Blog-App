@@ -26,7 +26,13 @@ const UserAuthForm = ({ type }) => {
         setUserAuth(data);
       })
       .catch(({ response }) => {
-        toast.error(response.data.error);
+        if (response) {
+          // Server responded with an error
+          toast.error(response.data.error);
+        } else {
+          // No response from server (network error, server down, etc.)
+          toast.error("Network error. Please try again later.");
+        } 
       });
   };
 
