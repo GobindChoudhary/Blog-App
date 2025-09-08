@@ -30,8 +30,8 @@ const BlogEditor = () => {
       const loading = toast.loading("Uploading...");
       // 1. Create a temporary local URL for an instant preview
 
-      const previewUrl = URL.createObjectURL(selectedFile);
-      setBannerUrl(previewUrl); // Show the preview immediately
+      // const previewUrl = URL.createObjectURL(selectedFile);
+      // setBannerUrl(previewUrl); // Show the preview immediately
 
       const formData = new FormData();
       formData.append("banner", selectedFile); // Use the file directly from the event
@@ -44,7 +44,7 @@ const BlogEditor = () => {
           setBannerUrl(res.data.imageUrl);
           setBlog({ ...blog, banner: res.data.imageUrl });
         })
-        .catchv((error) => {
+        .catch((error) => {
           toast.error(error.response.data.message);
         });
     }
@@ -67,24 +67,29 @@ const BlogEditor = () => {
       return toast.error("Upload a blog banner to publish it");
     }
     if (!title.length) {
-      return toast.error("Write blo title to publish it");
+      return toast.error("Write blog title to publish it");
     }
     if (textEditor.isReady) {
-      textEditor.save().then((data) => {
-        if (data.blocks.length) {
-          setBlog({ ...blog, content: data });
-          setEditorState("Publish");
-        } else {
-          return toast.error("Write something in your blog to publish it");
-        }
-      });
+      textEditor
+        .save()
+        .then((data) => {
+          if (data.blocks.length) {
+            setBlog({ ...blog, content: data });
+            setEditorState("Publish");
+          } else {
+            return toast.error("Write something in your blog to publish it");
+          }
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
     }
   };
   useEffect(() => {
     setTextEditor(
       new EditorJS({
         holder: "textEditor",
-        data: "",
+        data: content,
         tools: tools,
         placeholder: "Lets write a blog",
       })
@@ -112,7 +117,7 @@ const BlogEditor = () => {
           <div className="mx-auto max-w-[900px] w-full ">
             <div className="relation aspect-video hover:opacity-80 bg-white border-4 border-grey">
               <label htmlFor="uploadBanner">
-                <img src={bannerUrl} />
+                <img src={banner} />
                 <input
                   id="uploadBanner"
                   type="file"
@@ -123,6 +128,7 @@ const BlogEditor = () => {
               </label>
             </div>
             <textarea
+              defaultValue={title}
               className="text-4xl font-medium w-full h-20 outline-none resize-none mt-10 leading-tight placeholer:opacity-40"
               placeholder="Blog Title"
               onKeyDown={handleTitleKeyDown}

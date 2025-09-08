@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { userContext } from "../App";
 import { Navigate } from "react-router-dom";
 import BlogEditor from "../components/BlogEditor";
@@ -16,12 +16,19 @@ const blogStructure = {
 export const EditorContext = createContext({});
 
 const Editor = () => {
-  const [blog, setBlog] = useState(blogStructure);
+  const [blog, setBlog] = useState(() => {
+    const storedBlog = sessionStorage.getItem("blog-data");
+    return storedBlog ? JSON.parse(storedBlog) : blogStructure;
+  });
   const [editorstate, setEditorState] = useState("editor");
   const [textEditor, setTextEditor] = useState({ isReady: false });
   const {
     userAuth: { accessToken },
   } = useContext(userContext);
+
+  useEffect(() => {
+    sessionStorage.setItem("blog-data", JSON.stringify(blog));
+  }, [blog]);
 
   return (
     <EditorContext.Provider
