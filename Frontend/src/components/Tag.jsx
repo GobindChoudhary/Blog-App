@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { EditorContext } from "../pages/Editor";
 
 const Tag = ({ tag }) => {
-  const {
+  let {
     blog: { tags },
     blog,
     setBlog,

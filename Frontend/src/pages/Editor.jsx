@@ -16,10 +16,7 @@ const blogStructure = {
 export const EditorContext = createContext({});
 
 const Editor = () => {
-  const [blog, setBlog] = useState(() => {
-    const storedBlog = sessionStorage.getItem("blog-data");
-    return storedBlog ? JSON.parse(storedBlog) : blogStructure;
-  });
+  const [blog, setBlog] = useState(blogStructure);
   const [editorstate, setEditorState] = useState("editor");
   const [textEditor, setTextEditor] = useState({ isReady: false });
   const {
