@@ -3,7 +3,8 @@ dotenv.config();
 import express from "express";
 import connectDB from "./src/DB/db.js";
 import authRoute from "./src/routes/auth.route.js";
-import createBlog from "./src/routes/blog.route.js";
+import createBlog from "./src/routes/createBlog.route.js";
+import blogs from "./src/routes/blogs.route.js";
 import uploadImgRoute from "./src/routes/uploadImg.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -15,6 +16,7 @@ app.use(cookieParser());
 app.use("/auth", authRoute);
 app.use("/uploadBanner", uploadImgRoute);
 app.use("/create-blog", createBlog);
+app.use("/blogs", blogs);
 
 // connect to DB
 connectDB();
