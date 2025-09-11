@@ -61,19 +61,15 @@ const Publish = () => {
       return;
     }
     if (!title.length) {
-      return res.status(403).json({
-        error: "You must provide a title",
-      });
+      return toast.error("You must provide a title");
     }
     if (!des.length || des.length > 200) {
-      return res.status(403).json({
-        error: `You must provide a blog description under ${characterLimit} character`,
-      });
+      return toast.error(
+        `You must provide a blog description under ${characterLimit} character`
+      );
     }
     if (!tags.length) {
-      return res.status(403).json({
-        error: "You must provide a tags to publish it",
-      });
+      return toast.error("You must provide a tags to publish it");
     }
 
     const loadingToast = toast.loading("Publishing...");

@@ -11,25 +11,27 @@ const createBlogController = (req, res) => {
       error: "You must provide a title",
     });
   }
-  if (!des.length || des.length > 200) {
-    return res.status(403).json({
-      error: "You must provide a blog description under 200 character",
-    });
-  }
-  if (!tags.length || tags.length > 10) {
-    return res.status(403).json({
-      error: "You must provide a tags to publish it",
-    });
-  }
-  if (!banner.length) {
-    return res.status(403).json({
-      error: "You must provide a blog banner to publish it",
-    });
-  }
-  if (!content.blocks.length) {
-    return res.status(403).json({
-      error: "There must be some blog content to publish it",
-    });
+  if (!draft) {
+    if (!des.length || des.length > 200) {
+      return res.status(403).json({
+        error: "You must provide a blog description under 200 character",
+      });
+    }
+    if (!tags.length || tags.length > 10) {
+      return res.status(403).json({
+        error: "You must provide a tags to publish it",
+      });
+    }
+    if (!banner.length) {
+      return res.status(403).json({
+        error: "You must provide a blog banner to publish it",
+      });
+    }
+    if (!content.blocks.length) {
+      return res.status(403).json({
+        error: "There must be some blog content to publish it",
+      });
+    }
   }
 
   tags = tags.map((t) => t.toLowerCase());

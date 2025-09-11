@@ -7,7 +7,7 @@ import Publish from "../components/Publish";
 const blogStructure = {
   title: "",
   banner: "",
-  content: [],
+  content: { blocks: [] },
   tags: [],
   des: "",
   author: { personal_info: {} },
@@ -18,7 +18,7 @@ export const EditorContext = createContext({});
 const Editor = () => {
   const [blog, setBlog] = useState(blogStructure);
   const [editorstate, setEditorState] = useState("editor");
-  const [textEditor, setTextEditor] = useState({ isReady: false });
+  const [textEditor, setTextEditor] = useState(null);
   const {
     userAuth: { accessToken },
   } = useContext(userContext);
