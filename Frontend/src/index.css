@@ -107,7 +107,7 @@
   }
 
   .tag {
-    @apply p-3 bg-grey rounded-full px-6 capitalize;
+    @apply p-3 bg-grey cursor-pointer rounded-full px-6 capitalize;
   }
 
   .blog-title {
