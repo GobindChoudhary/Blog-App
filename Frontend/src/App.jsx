@@ -6,6 +6,7 @@ import { lookInSession } from "./common/Session";
 import { createContext } from "react";
 import Editor from "./pages/Editor";
 import HomePage from "./pages/HomePage";
+import SearchPage from "./pages/SearchPage";
 export const userContext = createContext({});
 
 const App = () => {
@@ -23,9 +24,10 @@ const App = () => {
       <Routes>
         <Route path="/editor" element={<Editor />} />
         <Route path="/" element={<Navbar />}>
-        <Route index element={<HomePage />} />
+          <Route index element={<HomePage />} />
           <Route path="signup" element={<UserAuthForm type="sign-up" />} />
           <Route path="signin" element={<UserAuthForm type="sign-in" />} />
+          <Route path="search/:query" element={<SearchPage />} />
         </Route>
       </Routes>
     </userContext.Provider>
