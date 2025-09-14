@@ -8,6 +8,7 @@ import blogs from "./src/routes/blogs.route.js";
 import uploadImgRoute from "./src/routes/uploadImg.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import userModel from "./src/models/user.model.js";
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,24 @@ app.use("/auth", authRoute);
 app.use("/uploadBanner", uploadImgRoute);
 app.use("/create-blog", createBlog);
 app.use("/blogs", blogs);
+app.post("/search-user", (req, res) => {
+  let { query } = req.body;
+
+  userModel
+    .find({
+      "personal_info.username": new RegExp(query, "i"),
+    })
+    .limit(50)
+    .select(
+      "personal_info.fullname personal_info.username personal_info.profile_img -_id"
+    )
+    .then((user) => {
+      return res.status(200).json({ user });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 // connect to DB
 connectDB();
