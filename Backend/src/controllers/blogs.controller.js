@@ -59,11 +59,17 @@ export const trendingBlogController = (req, res) => {
 };
 
 export const searchBlogController = (req, res) => {
-  let { tag, page } = req.body;
+  let { tag, page, query } = req.body;
 
-  let findQuery = { tags: tag, draft: false };
+  let findQuery;
 
-  let maxLimit = 5;
+  let maxLimit = 1;
+
+  if (tag) {
+    findQuery = { tags: tag, draft: false };
+  } else if (query) {
+    findQuery = { draft: false, title: new RegExp(query, "i") };
+  }
 
   blogModel
     .find(findQuery)
@@ -86,8 +92,14 @@ export const searchBlogController = (req, res) => {
 };
 
 export const searchBlogCountController = (req, res) => {
-  let { tag } = req.body;
-  let findQuery = { tags: tag, draft: false };
+  let { tag, query } = req.body;
+  let findQuery;
+
+  if (tag) {
+    findQuery = { tags: tag, draft: false };
+  } else if (query) {
+    findQuery = { title: new RegExp(query, "i"), draft: false };
+  }
 
   blogModel
     .countDocuments(findQuery)
