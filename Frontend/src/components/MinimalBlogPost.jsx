@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import getDate from "../common/date";
+import {getDate} from "../common/date";
 
 const MinimalBlogPost = ({ blog, index }) => {
   let {

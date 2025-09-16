@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import getDate from "../common/date";
+import { getDate } from "../common/date.jsx";
 
 const BlogsCards = ({ content, author }) => {
   let {
@@ -43,7 +43,6 @@ const BlogsCards = ({ content, author }) => {
       <div className="h-28 aspect-auto bg-grey ">
         <img
           src={banner}
-          alt=""
           className="w-full h-full aspect-square object-cover"
         />
       </div>

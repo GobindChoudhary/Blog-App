@@ -8,6 +8,7 @@ import Editor from "./pages/Editor";
 import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import PageNotFound from "./pages/PageNotFound";
+import ProfilePage from "./pages/ProfilePage";
 export const userContext = createContext({});
 
 const App = () => {
