@@ -59,7 +59,7 @@ const createBlogController = (req, res) => {
         .findOneAndUpdate(
           { _id: authorId },
           {
-            $inc: { "account_info.total_post": incrementVal },
+            $inc: { "account_info.total_posts": incrementVal },
             $push: {
               blogs: blog._id,
             },

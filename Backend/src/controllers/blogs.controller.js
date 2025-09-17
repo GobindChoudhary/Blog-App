@@ -1,4 +1,5 @@
 import blogModel from "../models/blog.model.js";
+import userModel from "../models/user.model.js";
 
 export const latestBlogController = (req, res) => {
   let { page } = req.body;
@@ -44,8 +45,8 @@ export const trendingBlogController = (req, res) => {
       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
     )
     .sort({
-      "activity.total_read": -1,
-      "activity.total_like": -1,
+      "activity.total_reads": -1,
+      "activity.total_likes": -1,
       publishedAt: -1,
     })
     .select("blog_id title publishedAt -_id ")
@@ -59,14 +60,14 @@ export const trendingBlogController = (req, res) => {
 };
 
 export const searchBlogController = (req, res) => {
-  let { tag, page, author, query } = req.body;
+  let { tag, page, author, query, limit, eleminate_blog } = req.body;
 
   let findQuery;
 
-  let maxLimit = 1;
+  let maxLimit = limit ? limit : 1;
 
   if (tag) {
-    findQuery = { tags: tag, draft: false };
+    findQuery = { tags: tag, draft: false, blog_id: { $ne: eleminate_blog } };
   } else if (query) {
     findQuery = { draft: false, title: new RegExp(query, "i") };
   } else if (author) {
@@ -116,10 +117,43 @@ export const searchBlogCountController = (req, res) => {
     });
 };
 
+export const getBlogController = (req, res) => {
+  let { blog_id } = req.body;
+
+  let incrementVal = 1;
+
+  blogModel
+    .findOneAndUpdate(
+      { blog_id },
+      { $inc: { "activity.total_reads": incrementVal } }
+    )
+    .populate(
+      "author",
+      "personal_info.profile_img personal_info.username personal_info.fullname"
+    )
+    .select("blog_id title des content banner activity tags publishedAt  ")
+    .then((blog) => {
+      userModel
+        .findOneAndUpdate(
+          { "personal_info.username": blog.author.personal_info.username },
+          {
+            $inc: { "account_info.total_reads": incrementVal },
+          }
+        )
+        .catch((err) => {
+          return res.status(500).json({ error: err.message });
+        });
+      return res.status(200).json({ blog });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+};
 export default {
   latestBlogController,
   trendingBlogController,
   blogCountController,
   searchBlogController,
   searchBlogCountController,
+  getBlogController,
 };
