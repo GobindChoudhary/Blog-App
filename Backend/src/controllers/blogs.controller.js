@@ -1,5 +1,6 @@
 import blogModel from "../models/blog.model.js";
 import userModel from "../models/user.model.js";
+import notificationModel from "../models/notification.model.js";
 
 export const latestBlogController = (req, res) => {
   let { page } = req.body;
@@ -153,6 +154,74 @@ export const getBlogController = (req, res) => {
       return res.status(500).json({ error: err.message });
     });
 };
+
+export const likeBlogController = (req, res) => {
+  let user_id = req.user;
+  // console.log(req.body);
+  let { _id, isLikedByUser } = req.body;
+  // console.log(req.body);
+  let incrementVal = !isLikedByUser ? 1 : -1;
+
+  blogModel
+    .findOneAndUpdate(
+      { _id },
+      { $inc: { "activity.total_likes": incrementVal } }
+    )
+    .then((blog) => {
+      // console.log(blog);
+      if (!isLikedByUser) {
+        notificationModel
+          .create({
+            type: "like",
+            blog: _id,
+            notification_for: blog.author,
+            user: user_id,
+          })
+          .then(() => {
+            return res.status(200).json({ liked_by_user: !isLikedByUser });
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err.message });
+          });
+      } else {
+        notificationModel
+          .findOneAndDelete({
+            user: user_id,
+            blog: _id,
+            type: "like",
+          })
+          .then(() => {
+            return res.status(200).json({ liked_by_user: false });
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err.message });
+          });
+      }
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+};
+
+export const islikeBlogController = (req, res) => {
+  let user_id = req.user;
+  let { _id } = req.body;
+
+  notificationModel
+    .exists({
+      user: user_id,
+      type: "like",
+      blog: _id,
+    })
+    .then((result) => {
+      return res.status(200).json({
+        result,
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+};
 export default {
   latestBlogController,
   trendingBlogController,
@@ -160,4 +229,5 @@ export default {
   searchBlogController,
   searchBlogCountController,
   getBlogController,
+  likeBlogController,
 };
