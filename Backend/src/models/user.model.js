@@ -1,4 +1,4 @@
-import { mongoose, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 let profile_imgs_name_list = [
   "Garfield",
