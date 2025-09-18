@@ -25,7 +25,7 @@ const BlogEditor = () => {
   const {
     userAuth: { accessToken },
   } = useContext(userContext);
-  console.log(blog);
+
   const handleBannerUpload = async (e) => {
     const selectedFile = e.target.files[0];
 
@@ -79,7 +79,10 @@ const BlogEditor = () => {
       textEditor
         .save()
         .then((data) => {
+          console.log(data);
+
           if (data.blocks.length) {
+            console.log(data.blocks);
             setBlog({ ...blog, content: data });
             setEditorState("Publish");
           } else {
@@ -142,9 +145,10 @@ const BlogEditor = () => {
   };
 
   useEffect(() => {
+    console.log(content[0]);
     const editor = new EditorJS({
       holder: "textEditor",
-      data: content,
+      data: content[0],
       tools: tools,
       placeholder: "Let's write a blog",
     });
@@ -185,7 +189,7 @@ const BlogEditor = () => {
                 <input
                   id="uploadBanner"
                   type="file"
-                  accept=".png, .webp, .jpg, .jpeg"
+                  accept=".png , .jpg, .jpeg"
                   hidden
                   onChange={handleBannerUpload}
                 />

@@ -118,10 +118,9 @@ export const searchBlogCountController = (req, res) => {
 };
 
 export const getBlogController = (req, res) => {
-  let { blog_id } = req.body;
+  let { blog_id, draft, mode } = req.body;
 
-  let incrementVal = 1;
-
+  let incrementVal = mode != "edit" ? 1 : 0;
   blogModel
     .findOneAndUpdate(
       { blog_id },
@@ -143,6 +142,11 @@ export const getBlogController = (req, res) => {
         .catch((err) => {
           return res.status(500).json({ error: err.message });
         });
+      if (blog.draft && !draft) {
+        return res
+          .status(500)
+          .json({ error: "you can not access draft blogs" });
+      }
       return res.status(200).json({ blog });
     })
     .catch((err) => {

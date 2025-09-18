@@ -1,13 +1,15 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { userContext } from "../App";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import BlogEditor from "../components/BlogEditor";
 import Publish from "../components/Publish";
+import Loader from "../common/Loader";
+import axios from "axios";
 
 const blogStructure = {
   title: "",
   banner: "",
-  content: { blocks: [] },
+  content: [],
   tags: [],
   des: "",
   author: { personal_info: {} },
@@ -16,16 +18,41 @@ const blogStructure = {
 export const EditorContext = createContext({});
 
 const Editor = () => {
+  let { blog_id } = useParams();
   const [blog, setBlog] = useState(blogStructure);
   const [editorstate, setEditorState] = useState("editor");
   const [textEditor, setTextEditor] = useState(null);
+  const [loading, setLoading] = useState(true);
   const {
     userAuth: { accessToken },
   } = useContext(userContext);
 
+  // // Persist blog draft to sessionStorage whenever it changes
+  // useEffect(() => {
+  //   sessionStorage.setItem("blog-data", JSON.stringify(blog));
+  // }, [blog]);
+
+  // Fetch blog data once when editing an existing blog
   useEffect(() => {
-    sessionStorage.setItem("blog-data", JSON.stringify(blog));
-  }, [blog]);
+    if (!blog_id) {
+      return setLoading(false);
+    }
+
+    axios
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "blogs/get-blog", {
+        blog_id,
+        draft: true,
+        mode: "edit",
+      })
+      .then(({ data: { blog } }) => {
+        setBlog(blog);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setBlog(null);
+        setLoading(false);
+      });
+  }, [blog_id]);
 
   return (
     <EditorContext.Provider
@@ -40,6 +67,8 @@ const Editor = () => {
     >
       {accessToken === null ? (
         <Navigate to="/signin" />
+      ) : loading ? (
+        <Loader />
       ) : editorstate == "editor" ? (
         <BlogEditor />
       ) : (

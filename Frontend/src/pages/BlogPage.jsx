@@ -42,8 +42,8 @@ const BlogPage = () => {
         blog_id,
       })
       .then(({ data: { blog } }) => {
+        console.log(blog);
         setBlog(blog);
-
         axios
           .post(import.meta.env.VITE_SERVER_DOMAIN + "blogs/search-blogs", {
             tag: blog.tags[0],
@@ -51,7 +51,6 @@ const BlogPage = () => {
             eleminate_blog: blog_id,
           })
           .then(({ data }) => {
-            console.log(data);
             setSimilarBlogs(data.blogs);
           });
         setLoading(false);
@@ -103,7 +102,7 @@ const BlogPage = () => {
             <BlogInteraction />
             {/* {blog content} */}
             <div className="my-12 font-gelasio blog-page-content ">
-              {console.log(content)}
+              {/* {console.log(content[0].blocks)} */}
               {content[0].blocks.map((block, i) => {
                 return (
                   <div key={i} className="my-4 md:my-8">

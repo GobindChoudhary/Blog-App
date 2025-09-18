@@ -5,11 +5,12 @@ import toast, { Toaster } from "react-hot-toast";
 import Tag from "./Tag";
 import axios from "axios";
 import { userContext } from "../App";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Publish = () => {
   let characterLimit = 200;
   let tagLimit = 10;
+  const { blog_id } = useParams();
   const navigate = useNavigate();
   let {
     setEditorState,
@@ -85,11 +86,15 @@ const Publish = () => {
     };
 
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "create-blog", blogObj, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "create-blog",
+        { ...blogObj, id: blog_id },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      )
       .then(() => {
         e.target.classList.remove("disable");
         toast.dismiss(loadingToast);
