@@ -7,6 +7,9 @@ import { getDate } from "../common/date";
 import axios from "axios";
 import BlogsCards from "../components/BlogsCards";
 import BlogContent from "../components/BlogContent";
+import CommentsContainer, {
+  fetchComments,
+} from "../components/CommentsContainer";
 
 export const blogStructure = {
   title: "",
@@ -15,6 +18,13 @@ export const blogStructure = {
   author: { personal_info: {} },
   banner: "",
   publishedAt: "",
+  activity: {
+    total_likes: 0,
+    total_comments: 0,
+    total_reads: 0,
+    total_parent_comments: 0,
+  },
+  comments: { result: [] },
 };
 
 export const BlogContext = createContext({});
@@ -26,9 +36,10 @@ const BlogPage = () => {
   const [similarBlogs, setSimilarBlogs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLikedByUser, setLikedByUser] = useState(false);
+  const [commentsWrapper, setCommentsWrapper] = useState(false);
+  const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
 
   let {
-    _id,
     title,
     content,
     banner,
@@ -43,7 +54,11 @@ const BlogPage = () => {
       .post(import.meta.env.VITE_SERVER_DOMAIN + "blogs/get-blog", {
         blog_id,
       })
-      .then(({ data: { blog } }) => {
+      .then(async ({ data: { blog } }) => {
+        blog.comments = await fetchComments({
+          blog_id: blog._id,
+          setParentCommentCountFunction: setTotalParentCommentsLoaded,
+        });
         console.log(blog);
         setBlog(blog);
         axios
@@ -67,10 +82,14 @@ const BlogPage = () => {
     resetState();
     fetchBlog();
   }, [blog_id]);
+
   const resetState = () => {
     setBlog(blogStructure);
     setSimilarBlogs(null);
     setLoading(true);
+    setLikedByUser(false);
+    setCommentsWrapper(false);
+    setTotalParentCommentsLoaded(0);
   };
 
   return (
@@ -79,8 +98,18 @@ const BlogPage = () => {
         <Loader />
       ) : (
         <BlogContext.Provider
-          value={{ blog, setBlog, isLikedByUser, setLikedByUser }}
+          value={{
+            blog,
+            setBlog,
+            isLikedByUser,
+            setLikedByUser,
+            commentsWrapper,
+            setCommentsWrapper,
+            totalParentCommentsLoaded,
+            setTotalParentCommentsLoaded,
+          }}
         >
+          <CommentsContainer />
           <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
             <img src={banner} className="aspect-video" />
             <div className="mt-12">
