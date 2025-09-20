@@ -4,7 +4,7 @@ import notificationModel from "../models/notification.model.js";
 
 export const latestBlogController = (req, res) => {
   let { page } = req.body;
-  let maxLimit = 2;
+  let maxLimit = 5;
   blogModel
     .find({ draft: false })
     .populate(
