@@ -37,7 +37,7 @@ const userNavigationPanel = () => {
         </Link>
         <Link
           className="flex gap-2 link md:hidden pl-8 py-4"
-          to={`/setting/edit-profile`}
+          to={`/settings/edit-profile`}
         >
           Setting
         </Link>

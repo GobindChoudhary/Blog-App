@@ -13,7 +13,7 @@ const Navbar = () => {
     setuserNavBarVisibility((currentState) => !currentState);
   };
   const handleUserNavBlur = () => {
-    setTimeout(() => setuserNavBarVisibility(false), 100);
+    setTimeout(() => setuserNavBarVisibility(false), 300);
   };
 
   const {
@@ -30,7 +30,7 @@ const Navbar = () => {
   };
   return (
     <>
-      <nav className="navbar">
+      <nav className="navbar x-50">
         {/* Logo */}
         <Link to="/" className="flex-none w-10 ">
           <img src={logo} className="w-full" alt="" />
