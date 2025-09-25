@@ -51,17 +51,18 @@ const CommentsContainer = () => {
   } = useContext(BlogContext);
 
   const loadMore = async () => {
-  let newCommentArr = await fetchComments({
-  skip: totalParentCommentsLoaded,
-  blog_id: _id,
-  setParentCommentCountFunction: setTotalParentCommentsLoaded,
-  comment_array: commentsArr,
-});
+    let newCommentArr = await fetchComments({
+      skip: totalParentCommentsLoaded,
+      blog_id: _id,
+      setParentCommentCountFunction: setTotalParentCommentsLoaded,
+      comment_array: commentsArr,
+    });
     setBlog({
       ...blog,
       comments: newCommentArr,
     });
   };
+
   return (
     <div
       className={

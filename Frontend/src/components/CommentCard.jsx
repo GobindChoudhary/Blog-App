@@ -103,13 +103,16 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     removeCommentsCards(index + 1);
   };
 
-  const loadReplies = ({ skip = 0 }) => {
-    if (children.length) {
+  const loadReplies = ({ skip = 0, currentIndex = index }) => {
+    if (commentsArr[currentIndex].children.length) {
       hideReply();
       axios
-        .post(import.meta.env.VITE_SERVER_DOMAIN + "get-replies", { _id, skip })
+        .post(import.meta.env.VITE_SERVER_DOMAIN + "get-replies", {
+          _id: commentsArr[currentIndex]._id,
+          skip,
+        })
         .then(({ data: { replies } }) => {
-          commentData.isReplyLoaded = true;
+          commentsArr[currentIndex].isReplyLoaded = true;
           replies.forEach((reply, i) => {
             reply.childrenLevel = commentData.childrenLevel + 1;
             commentsArr.splice(index + 1 + i + skip, 0, reply);
@@ -135,6 +138,39 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         removeCommentsCards(index + 1, true);
       })
       .catch(console.log);
+  };
+
+  const LoadMoreRepliesButton = () => {
+    let parentIndex = getParentIndex();
+    console.log(commentsArr[index]);
+    const button = (
+      <button
+        onClick={() =>
+          loadReplies({
+            skip: index - parentIndex,
+            currentIndex: parentIndex,
+          })
+        }
+        className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2"
+      >
+        Load more replies
+      </button>
+    );
+    if (commentsArr[index + 1]) {
+      if (
+        commentsArr[index + 1].childrenLevel < commentsArr[index].childrenLevel
+      ) {
+        if (index - parentIndex < commentsArr[parentIndex].children.length) {
+          return button;
+        }
+      }
+    } else {
+      if (parentIndex) {
+        if (index - parentIndex < commentsArr[parentIndex].children.length) {
+          return button;
+        }
+      }
+    }
   };
 
   return (
@@ -209,6 +245,8 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           </div>
         )}
       </div>
+
+      <LoadMoreRepliesButton />
     </div>
   );
 };
