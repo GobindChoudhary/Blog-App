@@ -13,6 +13,9 @@ import verifyUser from "./src/middleware/verifyUser.middleware.js";
 import commentModel from "./src/models/comment.model.js";
 import blogModel from "./src/models/blog.model.js";
 import NotificationModel from "./src/models/notification.model.js";
+import bcrypt from "bcrypt";
+// regex for password
+let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
 const app = express();
 app.use(express.json());
@@ -163,7 +166,7 @@ app.post("/get-replies", (req, res) => {
     .findOne({ _id })
     .populate({
       path: "children",
-      option: {
+      options: {
         limit: maxLimit,
         skip: skip,
         sort: {
@@ -230,7 +233,6 @@ const deleteComments = async (_id) => {
   }
 };
 
-
 app.post("/delete-comment", verifyUser, (req, res) => {
   let user_id = req.user;
 
@@ -246,6 +248,74 @@ app.post("/delete-comment", verifyUser, (req, res) => {
       });
     }
   });
+});
+app.post("/change-password", verifyUser, (req, res) => {
+  let { currentPassword, newPassword } = req.body;
+
+  if (
+    !passwordRegex.test(currentPassword) ||
+    !passwordRegex.test(newPassword)
+  ) {
+    return res.status(403).json({
+      error:
+        "Password should be 6 to 20 characters long with a numeric, 1 lowercase and 1 uppercase letters",
+    });
+  }
+
+  userModel
+    .findById({ _id: req.user })
+    .then((user) => {
+      if (user.google_auth) {
+        res.status(403).json({
+          error:
+            "You can't change account's password because you looged in through google",
+        });
+      }
+
+      bcrypt.compare(
+        currentPassword,
+        user.personal_info.password,
+        (err, result) => {
+          if (err) {
+            return res.status(500).json({
+              error:
+                "Some error occourd while changing the password, please try again later",
+            });
+          }
+
+          if (!result) {
+            return res.status(403).json({
+              error: "Incorrect current password",
+            });
+          }
+
+          bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+            userModel
+              .findOneAndUpdate(
+                { _id: req.user },
+                { "personal_info.password": hashedPassword }
+              )
+              .then((u) => {
+                return res
+                  .status(200)
+                  .json({ status: "Password changed successfully" });
+              })
+              .catch((err) => {
+                return res.status(500).json({
+                  error:
+                    "Some error occured while saving new password, please try again later",
+                });
+              });
+          });
+        }
+      );
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        error: "User not found",
+      });
+    });
 });
 // connect to DB
 connectDB();
