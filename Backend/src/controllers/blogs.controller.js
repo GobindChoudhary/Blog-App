@@ -65,7 +65,7 @@ export const searchBlogController = (req, res) => {
 
   let findQuery;
 
-  let maxLimit = limit ? limit : 1;
+  let maxLimit = limit ? limit : 5;
 
   if (tag) {
     findQuery = { tags: tag, draft: false, blog_id: { $ne: eleminate_blog } };

@@ -331,6 +331,65 @@ app.post("/update-profile-img", verifyUser, (req, res) => {
     });
 });
 
+app.post("/update-profile", verifyUser, (req, res) => {
+  let { username, bio, social_links } = req.body;
+
+  let bioLimit = 150;
+
+  if (username.length < 3) {
+    return res
+      .status(403)
+      .json({ error: "Username should be atleast 3 letter long" });
+  }
+  if (bio.length > bioLimit) {
+    return res
+      .status(403)
+      .json({ error: `Bio should not be more than ${bioLimit}` });
+  }
+
+  let socialLinksArr = Object.keys(social_links);
+
+  try {
+    for (let i = 0; i < socialLinksArr.length; i++) {
+      if (social_links[socialLinksArr[i]].length) {
+        let hostname = new URL(social_links[socialLinksArr[i]]).hostname;
+
+        if (
+          !hostname.includes(`${socialLinksArr[i]}.com`) &&
+          socialLinksArr[i] != "website"
+        ) {
+          return res.status(403).json({
+            error: `${socialLinksArr[i]} link is invalid. you must enter a full link`,
+          });
+        }
+      }
+    }
+  } catch {
+    return res.status(500).json({"error" :  "You must provide full social links with http(s) included"});
+  }
+
+  let updateObj = {
+    "personal_info.username": username,
+    "personal_info.bio": bio,
+    social_links,
+  };
+
+  userModel
+    .findOneAndUpdate({ _id: req.user }, updateObj, {
+      runValidators: true,
+    })
+    .then(() => {
+      res.status(200).json({ username });
+    })
+    .catch((err) => {
+      if (err.code == 11000) {
+        return res.status(409).json({error: "username is already taken"})
+      }
+        return res.status(500).json({error: err})
+
+    });
+});
+
 // connect to DB
 connectDB();
 // start server

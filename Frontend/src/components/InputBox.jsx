@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-const InputBox = ({ type, placeholder, name, icon }) => {
+const InputBox = ({
+  type,
+  id,
+  value,
+  placeholder,
+  name,
+  icon,
+  disable = false,
+}) => {
   const [passwordVisibility, setpasswordVisibility] = useState(false);
   return (
     <div className="relative w-[100%] mb-4">
@@ -10,6 +18,9 @@ const InputBox = ({ type, placeholder, name, icon }) => {
         }
         placeholder={placeholder}
         name={name}
+        id={id}
+        defaultValue={value}
+        disabled={disable}
         className="input-box"
       />
       <i className={`fi ${icon} input-icon`}></i>

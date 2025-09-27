@@ -82,7 +82,6 @@ const ProfilePage = () => {
 
         formatedData.user_id = user_id;
 
-        
         setBlogs(formatedData);
       });
   };
@@ -149,8 +148,8 @@ const ProfilePage = () => {
                 {blogs == null ? (
                   <Loader />
                 ) : blogs.results.length ? (
-                  blogs.results.map((blog, i) => {
-                    return (
+                  <>
+                    {blogs.results.map((blog, i) => (
                       <AnimationWrapper
                         transition={{ duration: 1, delay: i * 0.1 }}
                         key={i}
@@ -160,12 +159,17 @@ const ProfilePage = () => {
                           author={blog.author.personal_info}
                         />
                       </AnimationWrapper>
-                    );
-                  })
+                    ))}
+
+                    {/* ✅ Only show LoadMore button if there are blogs */}
+                    <LoadMoreDataBtn
+                      state={blogs}
+                      fetchDataFunction={getBlogs}
+                    />
+                  </>
                 ) : (
                   <NoData message="No blogs Published" />
                 )}
-                <LoadMoreDataBtn state={blogs} fetchDataFunction={getBlogs} />
               </>
               <AboutUser
                 bio={bio}

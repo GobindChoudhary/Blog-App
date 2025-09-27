@@ -13,6 +13,7 @@ const EditProfile = () => {
   const bioLimit = 150;
 
   const profileImgEle = useRef();
+  const editProfileForm = useRef();
 
   const [profile, setProfile] = useState(profileDataStructure);
   const [loading, setLoading] = useState(true);
@@ -91,6 +92,78 @@ const EditProfile = () => {
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    let form = new FormData(editProfileForm.current);
+
+    let formData = {};
+
+    for (let [key, value] of form.entries()) {
+      formData[key] = value;
+    }
+
+    let {
+      username,
+      bio,
+      youtube,
+      facebook,
+      twitter,
+      github,
+      instagram,
+      website,
+    } = formData;
+
+    if (username.length < 3) {
+      return toast.error("Username should be atleast 3 letter long");
+    }
+    if (bio.length > bioLimit) {
+      return toast.error(`Bio should not be more than ${bioLimit}`);
+    }
+
+    let loadingToast = toast.loading("Updating...");
+    e.target.setAttribute("disable", true);
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "update-profile",
+        {
+          username,
+          bio,
+          social_links: {
+            youtube,
+            facebook,
+            twitter,
+            github,
+            instagram,
+            website,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      )
+      .then(({ data }) => {
+        if (userAuth.username != data.username) {
+          let newUserAuth = { ...userAuth, username: data.username };
+
+          storeInSession("user", JSON.stringify(newUserAuth));
+          setUserAuth(newUserAuth);
+        }
+
+        toast.dismiss(loadingToast);
+        e.target.removeAttribute("disable");
+        toast.success("Profile Update");
+      })
+      .catch(({ response }) => {
+        toast.dismiss(loadingToast);
+        e.target.removeAttribute("disable");
+        toast.error(response.data.error);
+      });
+  };
+
   useEffect(() => {
     if (accessToken) {
       axios
@@ -112,7 +185,7 @@ const EditProfile = () => {
       {loading ? (
         <Loader />
       ) : (
-        <form>
+        <form ref={editProfileForm}>
           <Toaster />
           <h1 className="max-md:hidden">Edit Profile</h1>{" "}
           <div
@@ -218,7 +291,11 @@ const EditProfile = () => {
                 })}
               </div>
 
-              <button className="btn-dark w-auto px-10" type="submit">
+              <button
+                onClick={handleSubmit}
+                className="btn-dark w-auto px-10"
+                type="submit"
+              >
                 Update
               </button>
             </div>
