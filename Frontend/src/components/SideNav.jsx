@@ -80,15 +80,15 @@ const SideNav = () => {
             onClick={changePageState}
             className="sidebar-link"
           >
-            <i className="fi fi-rr-bell"></i>
+            <i className="fi fi-rr-document"></i>
             Blogs
           </NavLink>
           <NavLink
-            to="/dashboard/notification"
+            to="/dashboard/notifications"
             onClick={changePageState}
             className="sidebar-link"
           >
-            <i className="fi fi-rr-document"></i>
+            <i className="fi fi-rr-bell"></i>
             Notification
           </NavLink>
           <NavLink
@@ -122,7 +122,7 @@ const SideNav = () => {
         </div>
       </div>
 
-      <div className="max-md:-mt8 mt-5 w-full">
+      <div className="max-md:-mt-8 mt-5 w-full">
         <Outlet />
       </div>
     </section>

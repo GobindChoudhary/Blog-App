@@ -6,9 +6,16 @@ export const FilterPagenationData = async ({
   page,
   countRoute,
   data_to_sent = {},
+  user = undefined,
 }) => {
   let obj;
+  let headers = {};
 
+  if (user) {
+    headers = {
+      Authorization: `Bearer ${user}`,
+    };
+  }
   if (state != null && !create_new_arr) {
     obj = {
       ...state,
@@ -17,7 +24,9 @@ export const FilterPagenationData = async ({
     };
   } else {
     await axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + countRoute, data_to_sent)
+      .post(import.meta.env.VITE_SERVER_DOMAIN + countRoute, data_to_sent, {
+        headers,
+      })
       .then(({ data: { totalDocs } }) => {
         obj = {
           results: data,

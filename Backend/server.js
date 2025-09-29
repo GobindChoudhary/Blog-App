@@ -66,8 +66,8 @@ app.post("/get-profile", async (req, res) => {
 });
 app.post("/add-comment", verifyUser, (req, res) => {
   let user_id = req.user;
-  let { _id, comment, blog_author, replying_to } = req.body;
-  console.log(blog_author);
+  let { _id, comment, blog_author, replying_to, notification_id } = req.body;
+
   if (!comment.length) {
     return res
       .status(403)
@@ -81,6 +81,7 @@ app.post("/add-comment", verifyUser, (req, res) => {
     commented_by: user_id,
     replying_to,
   };
+
   if (replying_to) {
     commentObj.parent = replying_to;
     commentObj.isReply = true;
@@ -117,8 +118,21 @@ app.post("/add-comment", verifyUser, (req, res) => {
           { $push: { children: commentFile._id } }
         )
         .then((replyToCommentDoc) => {
-          notificationObj.notification_for = replyToCommentDoc.commented_by;
+          if (replyToCommentDoc) {
+            notificationObj.notification_for = replyToCommentDoc.commented_by;
+          }
         });
+
+      if (notification_id) {
+        NotificationModel.findOneAndUpdate(
+          { _id: notification_id },
+          {
+            reply: commentFile._id,
+          }
+        ).then((notification) => {
+          console.log(notification);
+        });
+      }
     }
 
     NotificationModel.create(notificationObj).then((notification) =>
@@ -136,7 +150,6 @@ app.post("/add-comment", verifyUser, (req, res) => {
 });
 app.post("/get-blog-comment", (req, res) => {
   let { blog_id, skip } = req.body;
-  console.log(skip);
   let maxLimit = 5;
 
   commentModel
@@ -207,8 +220,10 @@ const deleteComments = async (_id) => {
 
     // Delete notifications
     await NotificationModel.findOneAndDelete({ comment: _id });
-    await NotificationModel.findOneAndDelete({ reply: _id });
-    console.log("comment notifications deleted");
+    await NotificationModel.findOneAndUpdate(
+      { reply: _id },
+      { $unset: { reply: 1 } }
+    );
 
     // Update blog activity
     await blogModel.findOneAndUpdate(
@@ -238,7 +253,7 @@ app.post("/delete-comment", verifyUser, (req, res) => {
 
   let { _id } = req.body;
   commentModel.findOne({ _id }).then((comment) => {
-    if (user_id == comment.commentd_by || user_id == comment.blog_author) {
+    if (user_id == comment.commented_by || user_id == comment.blog_author) {
       deleteComments(_id);
 
       return res.status(200).json({ status: "done" });
@@ -311,7 +326,7 @@ app.post("/change-password", verifyUser, (req, res) => {
       );
     })
     .catch((err) => {
-      console.log(err);
+      console.log(err.message);
       return res.status(500).json({
         error: "User not found",
       });
@@ -320,7 +335,7 @@ app.post("/change-password", verifyUser, (req, res) => {
 
 app.post("/update-profile-img", verifyUser, (req, res) => {
   let { url } = req.body;
-  console.log(url);
+
   userModel
     .findOneAndUpdate({ _id: req.user }, { "personal_info.profile_img": url })
     .then(() => {
@@ -365,7 +380,9 @@ app.post("/update-profile", verifyUser, (req, res) => {
       }
     }
   } catch {
-    return res.status(500).json({"error" :  "You must provide full social links with http(s) included"});
+    return res.status(500).json({
+      error: "You must provide full social links with http(s) included",
+    });
   }
 
   let updateObj = {
@@ -383,13 +400,101 @@ app.post("/update-profile", verifyUser, (req, res) => {
     })
     .catch((err) => {
       if (err.code == 11000) {
-        return res.status(409).json({error: "username is already taken"})
+        return res.status(409).json({ error: "username is already taken" });
       }
-        return res.status(500).json({error: err})
-
+      return res.status(500).json({ error: err });
     });
 });
 
+app.get("/new-notification", verifyUser, (req, res) => {
+  let user_id = req.user;
+
+  NotificationModel.exists({
+    notification_for: user_id,
+    seen: false,
+    user: { $ne: user_id },
+  })
+    .then((result) => {
+      if (result) {
+        return res.status(200).json({ new_notification_available: true });
+      } else {
+        return res.status(200).json({ new_notification_available: false });
+      }
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/notifications", verifyUser, (req, res) => {
+  let user_id = req.user;
+
+  let { seen, page, filter, deletedDocCount } = req.body;
+
+  let maxLimit = 10;
+
+  let findQuery = { notification_for: user_id, user: { $ne: user_id } };
+
+  let skipDocs = (page - 1) * maxLimit;
+
+  if (filter != "all") {
+    findQuery.type = filter;
+  }
+
+  if (deletedDocCount) {
+    skipDocs -= deletedDocCount;
+  }
+
+  NotificationModel.find(findQuery)
+    .skip(skipDocs)
+    .limit(maxLimit)
+    .populate("blog", "title blog_id")
+    .populate(
+      "user",
+      "personal_info.fullname personal_info.username personal_info.profile_img"
+    )
+    .populate("comment", "comment")
+    .populate("replied_on_comment", "comment")
+    .populate("reply", "comment")
+    .sort({ createdAt: -1 })
+    .select("createdAt type seen reply")
+    .then((notifications) => {
+      NotificationModel.updateMany(findQuery, { seen: true })
+        .skip(skipDocs)
+        .limit(maxLimit)
+        .then(() => {
+          console.log("notification seen");
+        });
+
+      return res.status(200).json({ notifications });
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/all-notifications-count", verifyUser, (req, res) => {
+  let user_id = req.user;
+  let { filter } = req.body;
+
+  let findQuery = { notification_for: user_id, user: { $ne: user_id } };
+
+  if (filter != "all") {
+    findQuery.type = filter;
+  }
+
+  NotificationModel.countDocuments(findQuery)
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        error: err.message,
+      });
+    });
+});
 // connect to DB
 connectDB();
 // start server

@@ -65,17 +65,21 @@ const CommentField = ({
         let newCommentArr;
 
         if (replyingTo) {
-          commentsArr[index].children.push(data._id);
+          const newComments = [...commentsArr];
+          const parentComment = { ...newComments[index] };
+          parentComment.children = [
+            ...(parentComment.children || []),
+            data._id,
+          ];
+          parentComment.isReplyLoaded = true;
 
-          data.childrenLevel = commentsArr[index].childrenLevel + 1;
+          data.childrenLevel = parentComment.childrenLevel + 1;
           data.parentIndex = index;
 
-          commentsArr[index].isReplyLoaded = true;
+          newComments[index] = parentComment;
+          newComments.splice(index + 1, 0, data);
 
-          commentsArr.splice(index + 1, 0, data);
-
-          newCommentArr = commentsArr;
-
+          newCommentArr = newComments;
           setReplying(false);
         } else {
           data.childrenLevel = 0;
@@ -83,15 +87,24 @@ const CommentField = ({
         }
 
         let parentCommentIncrementVal = replyingTo ? 0 : 1;
-        setBlog({
-          ...blog,
-          comments: { ...comments, result: newCommentArr },
-          activity: {
-            ...activity,
-            total_comments: total_comments + 1,
+
+        setBlog((prevBlog) => {
+          const updatedComments = {
+            ...prevBlog.comments,
+            result: newCommentArr,
+          };
+          const updatedActivity = {
+            ...prevBlog.activity,
+            total_comments: prevBlog.activity.total_comments + 1,
             total_parent_comments:
-              total_parent_comments + parentCommentIncrementVal,
-          },
+              prevBlog.activity.total_parent_comments +
+              parentCommentIncrementVal,
+          };
+          return {
+            ...prevBlog,
+            comments: updatedComments,
+            activity: updatedActivity,
+          };
         });
 
         setTotalParentCommentsLoaded(
