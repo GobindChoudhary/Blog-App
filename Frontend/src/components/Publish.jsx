@@ -101,7 +101,7 @@ const Publish = () => {
         toast.success("Published 👍");
 
         setTimeout(() => {
-          navigate("/");
+          navigate("/dashboard/blogs");
         }, 500);
       })
       .catch(({ response }) => {

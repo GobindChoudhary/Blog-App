@@ -495,6 +495,74 @@ app.post("/all-notifications-count", verifyUser, (req, res) => {
       });
     });
 });
+
+app.post("/user-written-blogs", verifyUser, (req, res) => {
+  let user_id = req.user;
+
+  let { page, draft, query, deletedDocCount } = req.body;
+
+  let maxLimit = 5;
+  let skipDocs = (page - 1) * maxLimit;
+
+  if (deletedDocCount) {
+    skipDocs -= deletedDocCount;
+  }
+
+  blogModel
+    .find({ author: user_id, draft, title: new RegExp(query, "i") })
+    .skip(skipDocs)
+    .limit(maxLimit)
+    .sort({ publishedAt: -1 })
+    .select("title banner publishedAt blog_id activity des draft -_id")
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
+
+app.post("/user-written-blogs-count", verifyUser, (req, res) => {
+  let user_id = req.user;
+
+  let { draft, query } = req.body;
+
+  blogModel
+    .countDocuments({ author: user_id, draft, title: new RegExp(query, "i") })
+    .then((count) => res.status(200).json({ totalDocs: count }))
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/delete-blog", verifyUser, (req, res) => {
+  let user_id = req.user;
+  let { blog_id } = req.body;
+
+  blogModel
+    .findOneAndDelete({ blog_id })
+    .then((blog) => {
+      NotificationModel.deleteMany({ blog: blog._id }).then((data) =>
+        console.log("notification deleted")
+      );
+
+      commentModel
+        .deleteMany({ blog: blog._id })
+        .then((data) => console.log("comment deleted"));
+
+      userModel
+        .findByIdAndUpdate(
+          { _id: user_id },
+          { $pull: { blog: blog._id }, $inc: { "account_info.total_post": -1 } }
+        )
+        .then((user) => console.log("Blog Deleted"));
+
+      return res.status(200).json({ status: "done" });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 // connect to DB
 connectDB();
 // start server

@@ -26,7 +26,7 @@ const SearchPage = () => {
           data: data.blogs,
           page,
           countRoute: "blogs/search-blogs-count",
-          data_to_sent: { query },
+          data_to_send: { query },
           create_new_arr,
         });
 

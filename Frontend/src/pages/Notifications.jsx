@@ -47,7 +47,7 @@ const Notifications = () => {
           data,
           page,
           countRoute: "all-notifications-count",
-          data_to_sent: { filter },
+          data_to_send: { filter },
           user: accessToken,
         });
 

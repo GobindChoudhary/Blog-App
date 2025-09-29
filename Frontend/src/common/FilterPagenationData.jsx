@@ -5,7 +5,7 @@ export const FilterPagenationData = async ({
   data,
   page,
   countRoute,
-  data_to_sent = {},
+  data_to_send = {},
   user = undefined,
 }) => {
   let obj;
@@ -24,7 +24,7 @@ export const FilterPagenationData = async ({
     };
   } else {
     await axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + countRoute, data_to_sent, {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + countRoute, data_to_send, {
         headers,
       })
       .then(({ data: { totalDocs } }) => {

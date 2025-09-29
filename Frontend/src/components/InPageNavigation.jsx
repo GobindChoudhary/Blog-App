@@ -5,7 +5,7 @@ export let activeLineRef;
 export let activeTabRef;
 const InPageNavigation = ({
   routes,
-  defaultHidden,
+  defaultHidden = [],
   defaultActiveIndex = 0,
   children,
 }) => {
@@ -32,7 +32,7 @@ const InPageNavigation = ({
         {routes.map((route, i) => {
           return (
             <button
-              ref={i == defaultActiveIndex ? activeTabRef : null}
+              ref={i === defaultActiveIndex ? activeTabRef : null}
               key={i}
               className={
                 "p-4 px-5 capitalize " +
