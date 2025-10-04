@@ -1,7 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  getAuth,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+} from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -30,10 +36,22 @@ const auth = getAuth();
 export const authWithGoogle = async () => {
   let user = null;
 
-  await signInWithPopup(auth, provider)
-    .then((result) => {
+  try {
+    // Try popup first, fall back to redirect if COOP error
+    await signInWithPopup(auth, provider).then((result) => {
       user = result.user;
-    })
-    .catch((err) => console.log(err));
+    });
+  } catch (err) {
+    console.log("Popup failed, trying redirect:", err);
+    // If popup fails due to COOP, use redirect
+    await signInWithRedirect(auth, provider);
+    // Handle redirect result on page load
+    await getRedirectResult(auth).then((result) => {
+      if (result) {
+        user = result.user;
+      }
+    });
+  }
+
   return user;
 };

@@ -42,7 +42,7 @@ const BlogEditor = () => {
       formData.append("banner", selectedFile); // Use the file directly from the event
 
       await axios
-        .post("http://localhost:3000/uploadBanner/", formData)
+        .post(import.meta.env.VITE_SERVER_DOMAIN + "uploadBanner/", formData)
         .then((res) => {
           toast.dismiss(loading);
           toast.success("Uploaded...");
@@ -167,7 +167,7 @@ const BlogEditor = () => {
         <Link to="/" className="flex-none w-10">
           <img src={logo} />
         </Link>
-        <p className="max-md:hidden text-black line-clamp-1 w-full">
+        <p className="max-md:hidden text-dark-grey font-medium text-xl line-clamp-1 w-full ">
           {title.length ? title : "New Blog"}
         </p>
         <div className="flex gap-4 ml-auto">

@@ -187,7 +187,9 @@ const EditProfile = () => {
       ) : (
         <form ref={editProfileForm}>
           <Toaster />
-          <h1 className="max-md:hidden">Edit Profile</h1>{" "}
+          <h1 className="max-md:hidden text-xl text-dark-grey mb-3">
+            Edit Profile
+          </h1>{" "}
           <div
             className="flex flex-col lg:flex-row items-center lg:items-start
          py-10 gap-8 lg:gap-10"

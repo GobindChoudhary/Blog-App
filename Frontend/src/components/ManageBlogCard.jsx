@@ -50,7 +50,7 @@ export const ManagePublishBlogCard = ({ blog }) => {
         <div className="felx flex-col justify-between py-2 w-full min-w-[300px]">
           <div className="">
             <Link
-              to={`/blog/${blog_id}`}
+              to={`/blogs/${blog_id}`}
               className="blog-title mb-4 hover:underline"
             >
               {title}

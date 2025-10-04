@@ -11,7 +11,7 @@ const uploadImageByFile = async (file) => {
     formData.append("banner", file);
 
     const res = await axios.post(
-      "http://localhost:3000/uploadBanner/",
+      import.meta.env.VITE_SERVER_DOMAIN + "uploadBanner/",
       formData
     );
 

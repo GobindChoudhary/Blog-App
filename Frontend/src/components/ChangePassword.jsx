@@ -65,7 +65,9 @@ const ChangePassword = () => {
     <AnimationWrapper>
       <Toaster />
       <form ref={changePassworForm}>
-        <h1 className="max-md:hidden">Change Password</h1>
+        <h1 className="max-md:hidden text-xl text-dark-grey mb-3">
+          Change Password
+        </h1>
 
         <div className=" w-full md:max-w-[400px]">
           <InputBox
