@@ -1,6 +1,6 @@
 import { useContext, useRef } from "react";
 import AnimationWrapper from "../common/AnimationWrapper";
-import InputBox from "./InputBox";
+import InputBox from "../components/InputBox";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { userContext } from "../App";

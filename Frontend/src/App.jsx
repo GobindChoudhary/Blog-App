@@ -11,10 +11,10 @@ import PageNotFound from "./pages/PageNotFound";
 import ProfilePage from "./pages/ProfilePage";
 import BlogPage from "./pages/BlogPage";
 import SideNav from "./components/SideNav";
-import EditProfile from "./components/EditProfile";
-import ChangePassword from "./components/ChangePassword";
+import EditProfile from "./pages/EditProfile";
+import ChangePassword from "./pages/ChangePassword";
 import Notifications from "./pages/Notifications";
-import ManageBlogs from "./components/ManageBlogs";
+import ManageBlogs from "./pages/ManageBlogs";
 export const userContext = createContext({});
 
 const App = () => {

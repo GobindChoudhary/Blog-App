@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../App";
 import axios from "axios";
-import { profileDataStructure } from "../pages/ProfilePage";
+import { profileDataStructure } from "./ProfilePage";
 import AnimationWrapper from "../common/AnimationWrapper";
 import Loader from "../common/Loader";
 import toast, { Toaster } from "react-hot-toast";
-import InputBox from "./InputBox";
+import InputBox from "../components/InputBox";
 import uploadImageByFile from "../common/uploadImage";
 import { storeInSession } from "../common/Session";
 

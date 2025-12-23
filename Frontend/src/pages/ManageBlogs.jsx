@@ -5,12 +5,12 @@ import { userContext } from "../App";
 import { FilterPagenationData } from "../common/FilterPagenationData";
 import { Toaster } from "react-hot-toast";
 import axios from "axios";
-import InPageNavigation from "./InPageNavigation";
+import InPageNavigation from "../components/InPageNavigation";
 import Loader from "../common/Loader";
-import NoData from "./NoData";
+import NoData from "../components/NoData";
 import AnimationWrapper from "../common/AnimationWrapper";
-import { ManagePublishBlogCard, ManageDraftBlogCard } from "./ManageBlogCard";
-import LoadMoreDataBtn from "./LoadMoreDataBtn";
+import { ManagePublishBlogCard, ManageDraftBlogCard } from "../components/ManageBlogCard";
+import LoadMoreDataBtn from "../components/LoadMoreDataBtn";
 import { useSearchParams } from "react-router-dom";
 
 const ManageBlogs = () => {

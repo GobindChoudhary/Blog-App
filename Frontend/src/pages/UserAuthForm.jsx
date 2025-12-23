@@ -32,7 +32,7 @@ const UserAuthForm = ({ type }) => {
         } else {
           // No response from server (network error, server down, etc.)
           toast.error("Network error. Please try again later.");
-        } 
+        }
       });
   };
 
